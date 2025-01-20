@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Greater London Introduction System</title>
+    <!-- Leaflet CSS -->
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        /* 标题样式 */
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 2em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        /* 地图容器样式，留出顶部空间给标题 */
+        #map {
+            height: calc(100vh - 80px);
+            width: 100%;
+        }
+        /* 自定义 Popup 内容样式 */
+        .popup-content {
+            width: 250px;
+        }
+        .popup-content img {
+            width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        /* 信息控制器样式 */
+        .info {
+            padding: 6px 8px;
+            background: white;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+        .info h4 {
+            margin: 0 0 5px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+<!-- 页面标题 -->
+<div class="header">Greater London Introduction System</div>
+
+<div id="map"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // 初始化地图，设置伦敦的中心点和缩放级别
+    var map = L.map('map').setView([51.5074, -0.1278], 11);
+
+    // 添加多个底图源
+    var basemaps = {
+        // CartoDB 浅色底图
+        CartoDB_Positron: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }),
+        // CartoDB 深色底图
+        CartoDB_Voyager: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }),
+        // Stadia 地图
+        Stadia_OSMBright: L.tileLayer('https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
+            maxZoom: 20
+        })
+    };
+
+    // 添加默认底图
+    basemaps.CartoDB_Positron.addTo(map);
+
+    // 添加图层控制器
+    L.control.layers(basemaps, null, {position: 'topright'}).addTo(map);
+
+    // 添加比例尺
+    L.control.scale({imperial: false}).addTo(map);
+
+    // 创建一个全局 Audio 对象
+    var currentAudio = new Audio();
+    
+    // 在页面加载时就初始化音频
+    var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    var audioInitialized = true;
+
+    // 播放音频的函数
+    function playBoroughAudio(borough) {
+        currentAudio.pause();
+        currentAudio.src = `music/${borough}.mp3`;
+        currentAudio.play().catch(error => {
+            console.log(`No music file for ${borough} or autoplay was prevented`);
+        });
+    }
+
+    // 定义区域样式
+    function getColor(borough) {
+        // 定义颜色映射
+        const colors = {
+            // 浅黄色系
+            'hillingdon': '#FFF7DC',
+            'harrow': '#FFE4B5',
+            'barnet': '#FFB6C1',
+            'enfield': '#E6FFB3',
+            
+            // 紫色系
+            'ealing': '#E6E6FA',
+            'brent': '#F0F8FF',
+            'haringey': '#98FB98',
+            'waltham-forest': '#DDA0DD',
+            
+            // 橙色系
+            'redbridge': '#FFD700',
+            'havering': '#FFFACD',
+            
+            // 绿色系
+            'hounslow': '#90EE90',
+            'richmond-upon-thames': '#FFB6C1',
+            'kingston-upon-thames': '#98FB98',
+            'sutton': '#F4A460',
+            'croydon': '#98FB98',
+            'bromley': '#DDA0DD',
+            
+            // 内伦敦区域
+            'camden': '#98FB98',
+            'islington': '#DDA0DD',
+            'hackney': '#98FB98',
+            'tower-hamlets': '#DDA0DD',
+            'city-of-london': '#FFD700',
+            'city-of-westminster': '#F0F8FF',
+            'kensington-and-chelsea': '#FFD700',
+            'hammersmith-and-fulham': '#FFB6C1',
+            'wandsworth': '#F0F8FF',
+            'lambeth': '#F4A460',
+            'southwark': '#F4A460',
+            'lewisham': '#98FB98',
+            'greenwich': '#F4A460',
+            
+            // 其他外伦敦区域
+            'bexley': '#98FB98',
+            'barking-and-dagenham': '#FFB6C1',
+            'newham': '#F0F8FF',
+            'merton': '#DDA0DD'
+        };
+        
+        return colors[borough] || '#FFFFFF';  // 默认白色
+    }
+
+    function style(feature) {
+        return {
+            fillColor: getColor(feature.properties.borough),
+            weight: 1,
+            opacity: 1,
+            color: '#666',
+            dashArray: '3',
+            fillOpacity: 0.7
+        };
+    }
+
+    // 添加交互
+    function highlightFeature(e) {
+        var layer = e.target;
+
+        layer.setStyle({
+            weight: 5,
+            color: '#666',
+            dashArray: '',
+            fillOpacity: 0.7
+        });
+
+        layer.bringToFront();
+        info.update(layer.feature.properties);
+    }
+
+    function resetHighlight(e) {
+        geojsonLayers.resetStyle(e.target);
+        info.update();
+    }
+
+    function zoomToFeature(e) {
+        map.fitBounds(e.target.getBounds());
+    }
+
+    // 定义伦敦区域的介绍数据
+    var boroughData = {
+        // 内伦敦区域
+        'camden': {
+            description: 'Camden是伦敦的一个充满活力的区域，以其市场、音乐场所和另类文化而闻名。这里有著名的Camden Market，是伦敦最受欢迎的旅游景点之一。'
+        },
+        'city-of-london': {
+            description: '伦敦金融城是全球最重要的金融中心之一，拥有悠久的历史和现代化的金融区。这里有圣保罗大教堂等著名建筑。'
+        },
+        'city-of-westminster': {
+            description: '威斯敏斯特是伦敦的政治中心，这里有英国议会大厦、白金汉宫和威斯敏斯特教堂等标志性建筑。'
+        },
+        'greenwich': {
+            description: '格林尼治是世界时区的起点，拥有皇家天文台、格林尼治子午线和美丽的格林尼治公园。'
+        },
+        'hackney': {
+            description: 'Hackney是一个充满艺术气息的区域，有众多画廊、创意空间和时尚餐厅，是年轻人喜爱的地方。'
+        },
+        'hammersmith-and-fulham': {
+            description: '该区拥有泰晤士河沿岸的优美景色，是购物、娱乐和体育活动的重要地区。'
+        },
+        'islington': {
+            description: 'Islington以其众多的剧院、餐厅和精品店而闻名，是伦敦最时尚的区域之一。'
+        },
+        'kensington-and-chelsea': {
+            description: 'Kensington and Chelsea attracts a large number of French and Italian residents, showing the strong European immigrant characteristics of the area.'
+        },
+        'lambeth': {
+            description: 'Lambeth有伦敦眼和南岸艺术中心，是文化艺术的重要地区。'
+        },
+        'lewisham': {
+            description: 'Lewisham是一个多元文化区域，拥有繁忙的市场和美丽的公园。'
+        },
+        'southwark': {
+            description: 'Southwark有泰特现代美术馆、伦敦塔桥和热闹的波罗市场。'
+        },
+        'tower-hamlets': {
+            description: 'Tower Hamlets is the main gathering place for the Bangladeshi population in London, where this group accounts for a significant proportion. In addition, the area has also attracted a large number of Chinese residents, forming a relatively concentrated Chinese community. Italian and African groups also account for a certain proportion here, showing the diverse immigrant structure of the area, especially having a strong appeal among South Asian and European immigrant groups.'
+        },
+        'wandsworth': {
+            description: 'Wandsworth以其公园、购物中心和河畔餐厅而闻名。'
+        },
+
+        // 外伦敦区域
+        'barking-and-dagenham': {
+            description: '这个区正在快速发展，有许多新的住宅和商业项目。'
+        },
+        'barnet': {
+            description: 'Barnet是伦敦最大的区域之一，拥有大片绿地和优质的学校。'
+        },
+        'bexley': {
+            description: 'Bexley以其公园和历史建筑而闻名，是一个适合家庭居住的区域。'
+        },
+        'brent': {
+            description: 'Brent是多元文化的代表，这里有著名的温布利体育场。'
+        },
+        'bromley': {
+            description: 'Bromley是伦敦最绿的区域之一，有大量的公园和休闲设施。'
+        },
+        'croydon': {
+            description: 'Croydon has African as the main ethnic group, including Caribbean, Other African, and mixed ethnic groups such as White and Caribbean, White and African, etc. In addition, the area attracts Polish, Romanian and Indian residents, showing the diversity of European and South Asian immigrants.'
+        },
+        'ealing': {
+            description: 'Ealing以其电影制片厂和美丽的公园而闻名，被称为"伦敦的花园"。'
+        },
+        'enfield': {
+            description: 'Enfield拥有大片绿地和历史建筑，是一个宜居的区域。'
+        },
+        'haringey': {
+            description: 'Haringey是一个多元文化区域，有著名的亚历山大宫和芬斯伯里公园。'
+        },
+        'harrow': {
+            description: 'Harrow以其著名的私立学校和多元文化社区而闻名。'
+        },
+        'havering': {
+            description: 'Havering保留了大量绿地，是一个适合家庭居住的郊区。'
+        },
+        'hillingdon': {
+            description: '希思罗机场所在地，是重要的交通枢纽和商业区。'
+        },
+        'hounslow': {
+            description: 'Hounslow是一个多元文化区域，有著名的皇家植物园邱园。'
+        },
+        'kingston-upon-thames': {
+            description: '金斯顿是重要的购物区域，有美丽的泰晤士河畔景观。'
+        },
+        'merton': {
+            description: 'Merton以其温布尔登网球场和购物中心而闻名。'
+        },
+        'newham': {
+            description: '2012年奥运会主会场所在地，正在经历快速的发展。'
+        },
+        'redbridge': {
+            description: 'Redbridge有大量的公园和休闲设施，是一个适合家庭的区域。'
+        },
+        'richmond-upon-thames': {
+            description: '里士满拥有美丽的公园、历史建筑和泰晤士河景。'
+        },
+        'sutton': {
+            description: 'Sutton是一个安静的居住区，有良好的学校和购物设施。'
+        },
+        'waltham-forest': {
+            description: '沃尔瑟姆森林区有大片绿地，是2012年奥运会的部分场地。'
+        }
+    };
+
+    function onEachFeature(feature, layer) {
+        layer.on({
+            mouseover: function(e) {
+                highlightFeature(e);
+                // 播放对应区域的音乐
+                if (feature.properties.borough) {
+                    playBoroughAudio(feature.properties.borough);
+                }
+                
+                // 显示详细信息弹窗
+                if (boroughData[feature.properties.borough]) {
+                    var data = boroughData[feature.properties.borough];
+                    var popupContent = `
+                        <div class="popup-content">
+                            <h3>${feature.properties.borough.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</h3>
+                            <p>${data.description}</p>
+                        </div>
+                    `;
+                    layer.bindPopup(popupContent).openPopup();
+                }
+            },
+            mouseout: function(e) {
+                resetHighlight(e);
+                // 停止音乐播放
+                currentAudio.pause();
+                // 关闭弹窗
+                layer.closePopup();
+            },
+            click: function(e) {
+                // 播放音乐
+                if (feature.properties.borough) {
+                    playBoroughAudio(feature.properties.borough);
+                }
+                
+                // 显示详细信息弹窗
+                if (boroughData[feature.properties.borough]) {
+                    var data = boroughData[feature.properties.borough];
+                    var popupContent = `
+                        <div class="popup-content">
+                            <h3>${feature.properties.borough.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</h3>
+                            <p>${data.description}</p>
+                        </div>
+                    `;
+                    layer.bindPopup(popupContent).openPopup();
+                }
+            }
+        });
+
+        // 添加区域名称标签
+        if (feature.properties && feature.properties.borough) {
+            var displayName = feature.properties.borough
+                .split('-')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+
+            var textOverlay = L.tooltip({
+                permanent: true,
+                direction: 'center',
+                className: 'borough-label'
+            })
+            .setContent(displayName)
+            .setLatLng(layer.getBounds().getCenter());
+
+            textOverlay.addTo(map);
+        }
+    }
+
+    // 添加信息控件
+    var info = L.control();
+
+    info.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'info');
+        this.update();
+        return this._div;
+    };
+
+    info.update = function (props) {
+        this._div.innerHTML = '<h4>Greater London Info</h4>' + 
+            (props ? 
+                `<b>${props.region === 'inner' ? 'Inner London' : 'Outer London'}</b><br>` +
+                `Borough: ${props.borough.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`
+                : 'Hover over a borough');
+    };
+
+    info.addTo(map);
+
+    // 加载GeoJSON数据
+    var geojsonLayers = L.geoJSON(null, {style: style, onEachFeature: onEachFeature}).addTo(map);
+
+    // 内伦敦区域列表
+    const innerLondonBoroughs = [
+        'camden', 'city-of-london', 'city-of-westminster', 'greenwich', 'hackney',
+        'hammersmith-and-fulham', 'islington', 'kensington-and-chelsea', 'lambeth',
+        'lewisham', 'southwark', 'tower-hamlets', 'wandsworth'
+    ];
+
+    // 外伦敦区域列表
+    const outerLondonBoroughs = [
+        'barking-and-dagenham', 'barnet', 'bexley', 'brent', 'bromley',
+        'croydon', 'ealing', 'enfield', 'haringey', 'harrow', 'havering',
+        'hillingdon', 'hounslow', 'kingston-upon-thames', 'merton', 'newham',
+        'redbridge', 'richmond-upon-thames', 'sutton', 'waltham-forest'
+    ];
+
+    // 加载单个区域的函数
+    function loadBorough(borough, isInner) {
+        const path = `greater-london/${isInner ? 'inner-london' : 'outer-london'}/${borough}.geo.json`;
+        return fetch(path)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data || !data.type || data.type !== 'Feature') {
+                    console.error(`Invalid GeoJSON data structure for ${borough}`);
+                    return;
+                }
+                // 将单个 Feature 包装成 FeatureCollection
+                const featureCollection = {
+                    type: 'FeatureCollection',
+                    features: [data]
+                };
+                featureCollection.features[0].properties.region = isInner ? 'inner' : 'outer';
+                featureCollection.features[0].properties.borough = borough;
+                geojsonLayers.addData(featureCollection);
+            })
+            .catch(error => {
+                console.error(`Error loading ${borough} data:`, error);
+            });
+    }
+
+    // 加载所有内伦敦区域
+    Promise.all(innerLondonBoroughs.map(borough => loadBorough(borough, true)))
+        .then(() => console.log('Inner London boroughs loaded'))
+        .catch(error => console.error('Error loading inner London boroughs:', error));
+
+    // 加载所有外伦敦区域
+    Promise.all(outerLondonBoroughs.map(borough => loadBorough(borough, false)))
+        .then(() => console.log('Outer London boroughs loaded'))
+        .catch(error => console.error('Error loading outer London boroughs:', error));
+
+    // 更新样式
+    var style = document.createElement('style');
+    style.innerHTML = `
+        .borough-label {
+            background: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            font-weight: bold;
+            text-shadow: 
+                -1px -1px 0 #fff,
+                1px -1px 0 #fff,
+                -1px 1px 0 #fff,
+                1px 1px 0 #fff;
+        }
+        /* 根据缩放级别调整字体大小 */
+        .leaflet-zoom-4 .borough-label { font-size: 8px; }
+        .leaflet-zoom-5 .borough-label { font-size: 9px; }
+        .leaflet-zoom-6 .borough-label { font-size: 10px; }
+        .leaflet-zoom-7 .borough-label { font-size: 11px; }
+        .leaflet-zoom-8 .borough-label { font-size: 12px; }
+        .leaflet-zoom-9 .borough-label { font-size: 13px; }
+        .leaflet-zoom-10 .borough-label { font-size: 14px; }
+        .leaflet-zoom-11 .borough-label { font-size: 15px; }
+        .leaflet-zoom-12 .borough-label { font-size: 16px; }
+        .leaflet-zoom-13 .borough-label { font-size: 17px; }
+        .leaflet-zoom-14 .borough-label { font-size: 18px; }
+
+        /* 弹窗样式 */
+        .popup-content {
+            width: 250px;
+            padding: 10px;
+        }
+        .popup-content h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        .popup-content p {
+            margin: 0;
+            line-height: 1.5;
+            color: #34495e;
+        }
+    `;
+    document.head.appendChild(style);
+
+    // 监听地图缩放事件，更新缩放类名
+    map.on('zoomend', function() {
+        var zoom = map.getZoom();
+        var container = map.getContainer();
+        // 移除所有缩放相关的类名
+        var classes = container.className.split(' ').filter(c => !c.startsWith('leaflet-zoom-'));
+        container.className = classes.join(' ') + ' leaflet-zoom-' + zoom;
+    });
+</script>
+</body>
+</html>
