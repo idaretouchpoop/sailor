@@ -96,7 +96,7 @@
 
     // 创建一个全局 Audio 对象
     var currentAudio = new Audio();
-    
+
     // 在页面加载时就初始化音频
     var audioContext = new (window.AudioContext || window.webkitAudioContext)();
     var audioInitialized = true;
@@ -121,17 +121,17 @@
             'harrow': '#FFE4B5',
             'barnet': '#FFB6C1',
             'enfield': '#E6FFB3',
-            
+
             // 紫色系
             'ealing': '#E6E6FA',
             'brent': '#F0F8FF',
             'haringey': '#98FB98',
             'waltham-forest': '#DDA0DD',
-            
+
             // 橙色系
             'redbridge': '#FFD700',
             'havering': '#FFFACD',
-            
+
             // 绿色系
             'hounslow': '#90EE90',
             'richmond-upon-thames': '#FFB6C1',
@@ -139,7 +139,7 @@
             'sutton': '#F4A460',
             'croydon': '#98FB98',
             'bromley': '#DDA0DD',
-            
+
             // 内伦敦区域
             'camden': '#98FB98',
             'islington': '#DDA0DD',
@@ -154,14 +154,14 @@
             'southwark': '#F4A460',
             'lewisham': '#98FB98',
             'greenwich': '#F4A460',
-            
+
             // 其他外伦敦区域
             'bexley': '#98FB98',
             'barking-and-dagenham': '#FFB6C1',
             'newham': '#F0F8FF',
             'merton': '#DDA0DD'
         };
-        
+
         return colors[borough] || '#FFFFFF';  // 默认白色
     }
 
@@ -204,16 +204,16 @@
     var boroughData = {
         // 内伦敦区域
         'camden': {
-            description: 'Camden is a vibrant area of ​​London known for its markets, music venues and alternative culture. It is home to the famous Camden Market, one of London's most popular tourist attractions.'
+            description: 'Camden is a vibrant area of ​​London known for its markets, music venues and alternative culture. It is home to the famous Camden Market, one of London\'s most popular tourist attractions.'
         },
         'city-of-london': {
-            description: 'The City of London is one of the most important financial centers in the world, with a long history and a modern financial district. There are famous buildings such as St. Paul's Cathedral.'
+            description: 'The City of London is one of the most important financial centers in the world, with a long history and a modern financial district. There are famous buildings such as St. Paul\'s Cathedral.'
         },
         'city-of-westminster': {
             description: 'Westminster is the political center of London, home to iconic buildings such as the British Parliament, Buckingham Palace and Westminster Abbey.'
         },
         'greenwich': {
-            description: 'Greenwich is the starting point of the world's time zones and is home to the Royal Observatory, the Greenwich Meridian and the beautiful Greenwich Park.'
+            description: 'Greenwich is the starting point of the world\'s time zones and is home to the Royal Observatory, the Greenwich Meridian and the beautiful Greenwich Park.'
         },
         'hackney': {
             description: 'Hackney is an artistic area with many galleries, creative spaces and trendy restaurants. It is a favorite place for young people.'
@@ -222,7 +222,7 @@
             description: 'The area has beautiful views along the Thames and is an important area for shopping, entertainment and sports activities.'
         },
         'islington': {
-            description: 'Islington is one of London's most fashionable areas, known for its many theatres, restaurants and boutiques.'
+            description: 'Islington is one of London\'s most fashionable areas, known for its many theatres, restaurants and boutiques.'
 
         },
         'kensington-and-chelsea': {
@@ -264,7 +264,7 @@
             description: 'Croydon has African as the main ethnic group, including Caribbean, Other African, and mixed ethnic groups such as White and Caribbean, White and African, etc. In addition, the area attracts Polish, Romanian and Indian residents, showing the diversity of European and South Asian immigrants.'
         },
         'ealing': {
-            description: 'Ealing is famous for its film studios and beautiful parks and is known as the 'Garden of London'.'
+            description: 'Ealing is famous for its film studios and beautiful parks and is known as the \'Garden of London\'.'
         },
         'enfield': {
             description: 'Enfield is a pleasant area to live in, with its large green areas and historic buildings.'
@@ -315,7 +315,7 @@
                 if (feature.properties.borough) {
                     playBoroughAudio(feature.properties.borough);
                 }
-                
+
                 // 显示详细信息弹窗
                 if (boroughData[feature.properties.borough]) {
                     var data = boroughData[feature.properties.borough];
@@ -340,7 +340,7 @@
                 if (feature.properties.borough) {
                     playBoroughAudio(feature.properties.borough);
                 }
-                
+
                 // 显示详细信息弹窗
                 if (boroughData[feature.properties.borough]) {
                     var data = boroughData[feature.properties.borough];
@@ -367,8 +367,8 @@
                 direction: 'center',
                 className: 'borough-label'
             })
-            .setContent(displayName)
-            .setLatLng(layer.getBounds().getCenter());
+                .setContent(displayName)
+                .setLatLng(layer.getBounds().getCenter());
 
             textOverlay.addTo(map);
         }
@@ -384,8 +384,8 @@
     };
 
     info.update = function (props) {
-        this._div.innerHTML = '<h4>Greater London Info</h4>' + 
-            (props ? 
+        this._div.innerHTML = '<h4>Greater London Info</h4>' +
+            (props ?
                 `<b>${props.region === 'inner' ? 'Inner London' : 'Outer London'}</b><br>` +
                 `Borough: ${props.borough.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`
                 : 'Hover over a borough');
@@ -458,7 +458,7 @@
             border: none !important;
             box-shadow: none !important;
             font-weight: bold;
-            text-shadow: 
+            text-shadow:
                 -1px -1px 0 #fff,
                 1px -1px 0 #fff,
                 -1px 1px 0 #fff,
